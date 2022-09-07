@@ -1,0 +1,40 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block title %}Restaurants{% endblock %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-sm-12">
+
+      <h1>All Cafes</h1>
+        {% for cafe in cafes %}
+        <div class="card my-5">
+            <div class="card-body">
+                <h3 class="card-title">{{ cafe.name }}</h3>
+                <h5>Location: {{ cafe.location }}</h5>
+                <div class="d-flex flex-row justify-content-around p-5">
+                    <img class="rounded" width="400px" height="300px" src={{ cafe.img_url }} alt={{ cafe.name }}/>
+                    <div>
+                        <p>Seats: {{ cafe.seats }}</p>
+                        <p>Has Toilet: {{ "Yes" if cafe.has_toilet else "No" }}</p>
+                        <p>Has WiFi: {{ "Yes" if cafe.has_wifi else "No" }}</p>
+                        <p>Has Sockets: {{ "Yes" if cafe.has_sockets else "No" }}</p>
+                        <p>Can Take Calls: {{ "Yes" if cafe.can_take_calls else "No" }}</p>
+                        <p>Coffee Price: {{ cafe.coffee_price }}</p>
+                    </div>
+                    <img class="rounded" width="400px" height="300px" src={{ cafe.map_url }}/>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+
+      <p><a href="#">Return to index page</a></p>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

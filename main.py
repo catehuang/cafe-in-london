@@ -1,8 +1,13 @@
 from flask import Flask, render_template, jsonify, request
+from flask_bootstrap import Bootstrap
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, SelectField
+from wtforms.validators import DataRequired, URL
 from flask_sqlalchemy import SQLAlchemy
 import random
 
 app = Flask(__name__)
+Bootstrap(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cafes.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -26,6 +31,19 @@ class Cafe(db.Model):
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
 
+class CafeForm(FlaskForm):
+    name = StringField("Cafe name", validators=[DataRequired()])
+    map_url = StringField("Cafe Location URL on Google Maps", validators=[DataRequired()])
+    img_url = StringField("Cafe Image mage URL", validators=[DataRequired()])
+    location = StringField("Cafe Location", validators=[DataRequired()])
+    seats = StringField("Seats", validators=[DataRequired()])
+    has_toilet = StringField("Has Toilet", validators=[DataRequired()])
+    has_wifi = StringField("Has Wifi", validators=[DataRequired()])
+    has_sockets = StringField("Has Sockets", validators=[DataRequired()])
+    can_take_calls = StringField("Can Take Calls", validators=[DataRequired()])
+    coffee_price = StringField("Caffee Price", validators=[DataRequired()])
+
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -41,7 +59,8 @@ def get_random_cafe():
 @app.route('/all')
 def get_all_cafes():
     cafes = db.session.query(Cafe).all()
-    return jsonify(cafes=[cafe.to_dict() for cafe in cafes])
+    # return jsonify(cafes=[cafe.to_dict() for cafe in cafes])
+    return render_template("cafes.html", cafes=[cafe.to_dict() for cafe in cafes])
 
 
 @app.route('/search')
@@ -54,22 +73,25 @@ def get_cafe_location():
         return jsonify(error={"Not Found": "Sorry, we don't have a cafe at that location."}), 404
 
 
-@app.route('/add', methods=["POST"])
+@app.route('/add', methods=["GET", "POST"])
 def add_new_cafe():
-    new_cafe = Cafe(
-        name = request.form.get("name"),
-        map_url = request.form.get("map_url"),
-        img_url = request.form.get("img_url"),
-        location = request.form.get("loc"),
-        has_sockets = bool(request.form.get("sockets")),
-        has_toilet = bool(request.form.get("toilet")),
-        has_wifi = bool(request.form.get("wifi")),
-        can_take_calls = bool(request.form.get("calls")),
-        seats = request.form.get("seats"),
-        coffee_price = request.form.get("coffee_price"),
-    )
-    db.session.add(new_cafe)
-    db.session.commit()
+    form = CafeForm()
+    if form.validate_on_submit():
+        new_cafe = Cafe(
+            name = request.form.get("name"),
+            map_url = request.form.get("map_url"),
+            img_url = request.form.get("img_url"),
+            location = request.form.get("loc"),
+            has_sockets = bool(request.form.get("sockets")),
+            has_toilet = bool(request.form.get("toilet")),
+            has_wifi = bool(request.form.get("wifi")),
+            can_take_calls = bool(request.form.get("calls")),
+            seats = request.form.get("seats"),
+            coffee_price = request.form.get("coffee_price"),
+        )
+        db.session.add(new_cafe)
+        db.session.commit()
+        return redirect(url_for('/'))
     return jsonify(response={"Success": "Successfully added the new cafe."})
 
 
